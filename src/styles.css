@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #0052FF; /* Electric Blue */
+  --color-primary-600: #0041CC;
+  --color-primary-700: #003199;
+
+  --color-navy-nitex: #0A1A2F;
+  --color-indigo-nitex: #0A2A5C;
+
+  --color-accent: #38BDF8;
+  --color-accent-secondary: #22D3EE;
+
+  --color-surface: #FFFFFF;
+  --color-bg-main: #FDFDFF;
+  --color-bg-secondary: #F8FAFC;
+
+  --color-text-title: #050A1F;
+  --color-text-body: #334155;
+  --color-text-muted: #64748B;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-4xl: 3rem;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-text-body bg-bg-main antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-text-title font-bold;
+  }
+}
+
+.glass-card {
+  @apply bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.03)] backdrop-blur-xl transition-all duration-500;
+}
+
+.btn-primary {
+  @apply px-10 py-4 bg-primary-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-500/30 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+}
+
+.btn-secondary {
+  @apply px-10 py-4 bg-white text-text-title border border-slate-200 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-95 shadow-sm cursor-pointer;
+}
+
+.input-field {
+  @apply w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold transition-all outline-none focus:bg-white focus:border-primary-500 focus:shadow-2xl focus:shadow-primary-500/5 placeholder:text-slate-300 text-text-title;
+}
+
+.nav-link {
+  @apply text-[11px] font-black uppercase tracking-[0.1em] text-text-muted/70 hover:text-primary-500 transition-all relative flex items-center gap-1;
+}
+
+.nav-link::after {
+  content: '';
+  @apply absolute -bottom-1 left-0 w-0 h-[2px] bg-primary-500 transition-all duration-300 rounded-full;
+}
+
+.nav-link:hover::after, .nav-link-active::after {
+  @apply w-4;
+}
+
+.nav-link-active {
+  @apply text-text-title;
+}
+
+.nav-link-active::after {
+  @apply w-full;
+}
+
+/* Animations */
+.fade { opacity: 0; transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); transform: translateY(40px); }
+.fade-left { opacity: 0; transform: translateX(-40px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+.fade-right { opacity: 0; transform: translateX(40px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+.zoom-in { opacity: 0; transform: scale(0.9); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+
+.visible { opacity: 1; transform: translate(0) scale(1) !important; }
+
+@keyframes shine {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.animate-shine {
+  overflow: hidden;
+  position: relative;
+}
+
+.animate-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shine 2s infinite;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}

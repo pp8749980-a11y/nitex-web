@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: nitex-app
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node dist/app/server/server.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 10000
