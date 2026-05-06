@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { CourseService } from '../../core/services/course.service';
@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { User } from '../../core/models/user.model';
 import { Course } from '../../core/models/course.model';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-panel',
@@ -13,215 +14,264 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, MatIconModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-dark-bg min-h-screen py-12 text-slate-300">
-      <div class="max-w-7xl mx-auto px-4">
-        
-        <div class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 class="text-4xl font-black tracking-tighter mb-2 text-white">Panel de Administración</h1>
-            <p class="text-slate-500 font-medium">Gestión de usuarios, cursos y métricas de la plataforma.</p>
-          </div>
-          <div class="flex gap-4">
-             <div class="p-5 bg-dark-card rounded-2xl border border-slate-800 shadow-xl flex items-center gap-4">
-               <div class="w-10 h-10 bg-primary-600/10 text-primary-400 rounded-xl flex items-center justify-center border border-primary-500/20">
-                 <mat-icon>people</mat-icon>
-               </div>
-               <div>
-                 <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Usuarios</div>
-                 <div class="text-xl font-black text-white">{{ allUsers().length }}</div>
-               </div>
-             </div>
-             <div class="p-5 bg-dark-card rounded-2xl border border-slate-800 shadow-xl flex items-center gap-4">
-               <div class="w-10 h-10 bg-emerald-600/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20">
-                 <mat-icon>school</mat-icon>
-               </div>
-               <div>
-                 <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cursos Activos</div>
-                 <div class="text-xl font-black text-white">{{ allCourses().length }}</div>
-               </div>
-             </div>
-          </div>
+    <div class="flex h-[calc(100vh-80px)] bg-bg-main overflow-hidden font-sans">
+      
+      <!-- 📂 Admin Sidebar -->
+      <aside class="w-80 shrink-0 bg-white border-r border-slate-100 flex flex-col p-10 space-y-12 shadow-sm relative z-20">
+        <div class="space-y-6">
+           <div class="flex items-center gap-3 px-2">
+              <div class="w-10 h-10 bg-primary-500 rounded-xl flex-center text-white shadow-lg shadow-primary-500/20">
+                <mat-icon class="scale-90">admin_panel_settings</mat-icon>
+              </div>
+              <span class="text-xl font-black text-text-title tracking-tighter uppercase italic">Control Panel</span>
+           </div>
+           
+           <nav class="space-y-1 pt-6">
+             @for (item of menuItems; track item.label) {
+               <button 
+                 (click)="activeView.set(item.view)"
+                 class="w-full flex items-center gap-4 px-8 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-widest transition-all group"
+                 [class]="activeView() === item.view ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/20' : 'text-slate-400 hover:bg-slate-50 hover:text-primary-600'"
+               >
+                 <mat-icon class="scale-90" [class.text-white]="activeView() === item.view">{{ item.icon }}</mat-icon>
+                 {{ item.label }}
+               </button>
+             }
+           </nav>
         </div>
 
-        <!-- Users Table -->
-        <div class="bg-dark-card rounded-3xl border border-slate-800 overflow-hidden shadow-2xl transition-all mb-12">
-          <div class="p-6 border-b border-white/5 flex justify-between items-center bg-dark-surface/50">
-            <h2 class="text-lg font-black text-white uppercase tracking-widest">Usuarios Registrados</h2>
-          </div>
+        <div class="mt-auto pt-10 border-t border-slate-50">
+           <div class="flex items-center gap-4 p-5 bg-slate-50 rounded-[32px] border border-slate-100">
+              <div class="w-12 h-12 rounded-2xl overflow-hidden shadow-sm border-2 border-white ring-4 ring-primary-50">
+                <img [src]="auth.currentUser()?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-black text-text-title truncate uppercase tracking-tighter">{{ auth.currentUser()?.name }}</p>
+                <p class="text-[9px] font-black text-primary-500 uppercase tracking-widest leading-none mt-1">Master Admin</p>
+              </div>
+           </div>
+        </div>
+      </aside>
+
+      <!-- 📊 Main Content -->
+      <main class="flex-grow overflow-y-auto p-12 lg:p-20 scrollbar-thin">
+        <div class="max-w-6xl mx-auto space-y-16 animate-fade">
           
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead>
-                <tr class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 bg-dark-surface/30">
-                  <th class="px-8 py-5">Usuario</th>
-                  <th class="px-8 py-5">Rol</th>
-                  <th class="px-8 py-5">Cursos</th>
-                  <th class="px-8 py-5 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-white/5">
-                @for (user of allUsers(); track user.id) {
-                  <tr class="hover:bg-white/[0.02] transition-colors group">
-                    <td class="px-8 py-5">
-                      <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
-                          <img [src]="user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" class="w-full h-full object-cover" [alt]="user.name">
-                        </div>
-                        <div>
-                          <p class="font-bold text-slate-200 group-hover:text-white transition-colors">{{ user.name }}</p>
-                          <p class="text-xs text-slate-500">{{ user.email }}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-8 py-5">
-                      <span [class]="user.role === 'admin' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-primary-500/10 text-primary-400 border-primary-500/20'" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border">
-                        {{ user.role }}
-                      </span>
-                    </td>
-                    <td class="px-8 py-5 font-bold text-slate-400 text-xs uppercase tracking-wider">
-                      {{ user.enrolledCourses.length }} cursos
-                    </td>
-                    <td class="px-8 py-5 text-right">
-                      <div class="flex justify-end gap-2">
-                        <button (click)="editUser(user)" class="p-2 text-slate-500 hover:text-primary-400 hover:bg-primary-500/10 rounded-lg transition-all" title="Editar">
-                           <mat-icon class="scale-75">edit</mat-icon>
-                        </button>
-                        <button (click)="deleteUser(user)" [disabled]="user.role === 'admin'" class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed" title="Eliminar">
-                           <mat-icon class="scale-75">delete</mat-icon>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+          <div class="flex flex-col md:flex-row justify-between items-end gap-12">
+             <div class="space-y-4">
+                <div class="flex items-center gap-3 text-primary-500">
+                   <div class="w-10 h-0.5 bg-current rounded-full"></div>
+                   <span class="text-[10px] font-black uppercase tracking-[0.4em]">Gestión de Activos</span>
+                </div>
+                <h1 class="text-5xl lg:text-7xl font-black text-text-title tracking-tighter uppercase italic leading-none">{{ activeView() }}</h1>
+                <p class="text-xl text-text-muted font-medium italic">Supervisa y optimiza la experiencia Nitex.</p>
+             </div>
+             
+             <div class="flex gap-6">
+                <div class="p-10 bg-white rounded-[48px] border border-slate-100 shadow-sm text-center min-w-[200px] hover:shadow-xl transition-all group">
+                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Estudiantes</p>
+                   <p class="text-5xl font-black text-text-title tracking-tighter group-hover:text-primary-500 transition-colors">{{ allUsers().length }}</p>
+                </div>
+                <div class="p-10 bg-white rounded-[48px] border border-slate-100 shadow-sm text-center min-w-[200px] hover:shadow-xl transition-all group">
+                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Cursos</p>
+                   <p class="text-5xl font-black text-primary-500 tracking-tighter">{{ allCourses().length }}</p>
+                </div>
+             </div>
           </div>
-        </div>
 
-        <!-- Courses Table -->
-        <div class="bg-dark-card rounded-3xl border border-slate-800 overflow-hidden shadow-2xl transition-all">
-          <div class="p-6 border-b border-white/5 flex justify-between items-center bg-dark-surface/50">
-            <h2 class="text-lg font-black text-white uppercase tracking-widest">Catálogo de Cursos</h2>
-            <button class="bg-primary-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-500 transition-all flex items-center gap-2 shadow-lg shadow-primary-900/20">
-              <mat-icon class="scale-50">add</mat-icon> Nuevo Curso
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead>
-                <tr class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 bg-dark-surface/30">
-                  <th class="px-8 py-5">Curso</th>
-                  <th class="px-8 py-5">Categoría</th>
-                  <th class="px-8 py-5">Rating</th>
-                  <th class="px-8 py-5 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-white/5">
-                @for (course of allCourses(); track course.id) {
-                  <tr class="hover:bg-white/[0.02] transition-colors group">
-                    <td class="px-8 py-5">
-                      <div class="flex items-center gap-4">
-                        <div class="w-16 h-10 rounded-lg bg-slate-900 overflow-hidden border border-slate-800">
-                          <img [src]="course.image" class="w-full h-full object-cover" [alt]="course.title">
-                        </div>
-                        <p class="font-bold text-slate-200 group-hover:text-white transition-colors">{{ course.title }}</p>
+          <!-- Views -->
+          <div class="animate-fade-up">
+             @if (activeView() === 'Dashboard') {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                   <div class="bg-white p-12 rounded-[56px] border border-slate-100 shadow-sm space-y-6">
+                      <div class="w-16 h-16 bg-primary-50 rounded-[24px] flex-center text-primary-500">
+                         <mat-icon class="scale-110">people</mat-icon>
                       </div>
-                    </td>
-                    <td class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ course.category }}</td>
-                    <td class="px-8 py-5">
-                      <div class="flex items-center gap-1 text-amber-500">
-                        <mat-icon class="scale-50">star</mat-icon>
-                        <span class="text-xs font-bold">{{ course.rating }}</span>
+                      <div>
+                         <p class="text-4xl font-black text-text-title tracking-tighter">{{ allUsers().length }}</p>
+                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Estudiantes Totales</p>
                       </div>
-                    </td>
-                    <td class="px-8 py-5 text-right">
-                       <div class="flex justify-end gap-2">
-                        <button class="p-2 text-slate-500 hover:text-primary-400 hover:bg-primary-500/10 rounded-lg transition-all">
-                           <mat-icon class="scale-75">edit</mat-icon>
-                        </button>
-                        <button class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
-                           <mat-icon class="scale-75">delete</mat-icon>
-                        </button>
+                   </div>
+                   <div class="bg-white p-12 rounded-[56px] border border-slate-100 shadow-sm space-y-6">
+                      <div class="w-16 h-16 bg-indigo-50 rounded-[24px] flex-center text-indigo-500">
+                         <mat-icon class="scale-110">school</mat-icon>
                       </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      <div>
+                         <p class="text-4xl font-black text-text-title tracking-tighter">{{ allCourses().length }}</p>
+                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Cursos Activos</p>
+                      </div>
+                   </div>
+                </div>
+                
+                <div class="mt-12 p-12 bg-slate-900 rounded-[64px] text-white relative overflow-hidden">
+                   <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+                   <div class="relative z-10 space-y-4">
+                      <h3 class="text-3xl font-black italic uppercase tracking-tighter">Resumen de Actividad</h3>
+                      <p class="text-white/60 font-medium italic">La plataforma Nitex está operando con un rendimiento del 99.9% hoy.</p>
+                   </div>
+                </div>
+             }
 
-        <div class="mt-12 p-8 bg-amber-500/5 rounded-3xl border border-amber-500/20 flex items-start gap-6 shadow-xl shadow-amber-900/5">
-           <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center shrink-0 border border-amber-500/30">
-             <mat-icon>info</mat-icon>
-           </div>
-           <div>
-             <h3 class="text-base font-black text-amber-500 mb-1 uppercase tracking-widest">Mantenimiento planificado</h3>
-             <p class="text-amber-500/80 leading-relaxed font-medium text-sm">
-               La gestión de contenidos (Cursos y Lecciones) en este panel está bajo desarrollo. Actualmente se permite únicamente la gestión de usuarios y visualización de métricas básicas.
-             </p>
-           </div>
+             @if (activeView() === 'Usuarios') {
+               <div class="bg-white rounded-[64px] border border-slate-100 overflow-hidden shadow-[0_64px_120px_-24px_rgba(0,0,0,0.08)]">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="bg-slate-50/50 border-b border-slate-100">
+                        <th class="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identidad del Estudiante</th>
+                        <th class="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Progreso Global</th>
+                        <th class="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Control</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                      @for (user of allUsers(); track user.id) {
+                        <tr class="group hover:bg-slate-50/50 transition-all duration-500">
+                          <td class="px-12 py-10">
+                            <div class="flex items-center gap-6">
+                              <div class="w-16 h-16 rounded-[24px] overflow-hidden shadow-lg border-2 border-white ring-4 ring-slate-50 group-hover:ring-primary-50 transition-all">
+                                <img [src]="user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name" class="w-full h-full object-cover">
+                              </div>
+                              <div class="min-w-0">
+                                <p class="text-xl font-black text-text-title tracking-tight italic uppercase leading-none mb-2">{{ user.name }}</p>
+                                <p class="text-xs text-text-muted font-medium italic">{{ user.email }}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="px-12 py-10">
+                            <div class="space-y-3">
+                               <div class="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">
+                                  <span>Avance</span>
+                                  <span>{{ user.completedLessons.length * 5 }}%</span>
+                               </div>
+                               <div class="w-40 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                  <div [style.width.%]="user.completedLessons.length * 5" class="h-full bg-primary-500 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)]"></div>
+                               </div>
+                            </div>
+                          </td>
+                          <td class="px-12 py-10 text-right">
+                             <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                               <button (click)="editUser(user)" class="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-primary-500 shadow-sm border border-slate-100 flex-center transition-all hover:scale-110"><mat-icon class="scale-75">edit</mat-icon></button>
+                               <button (click)="deleteUser(user)" [disabled]="user.role === 'admin'" class="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-rose-500 shadow-sm border border-slate-100 flex-center transition-all disabled:opacity-10 hover:scale-110"><mat-icon class="scale-75">delete</mat-icon></button>
+                             </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+               </div>
+             }
+
+             @if (activeView() === 'Cursos') {
+               <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                  @for (course of allCourses(); track course.id) {
+                    <div class="bg-white p-10 rounded-[64px] border border-slate-100 shadow-sm hover:shadow-[0_64px_120px_-24px_rgba(0,0,0,0.1)] transition-all duration-700 group flex items-center justify-between relative overflow-hidden">
+                       <div class="flex items-center gap-8 min-w-0 relative z-10">
+                          <div class="w-24 h-24 rounded-[32px] overflow-hidden border border-slate-100 shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-500">
+                             <img [src]="course.image" class="w-full h-full object-cover">
+                          </div>
+                          <div class="min-w-0">
+                             <p class="text-[10px] text-primary-500 font-black uppercase tracking-[0.3em] mb-2 leading-none">{{ course.category }}</p>
+                             <p class="text-2xl font-black text-text-title tracking-tight italic truncate uppercase leading-tight">{{ course.title }}</p>
+                          </div>
+                       </div>
+                       <div class="flex gap-3 relative z-10">
+                          <button (click)="editCourse(course)" class="w-14 h-14 rounded-3xl bg-slate-50 text-slate-400 hover:bg-primary-500 hover:text-white transition-all duration-500 flex-center hover:scale-110 shadow-sm"><mat-icon class="scale-75">edit</mat-icon></button>
+                          <button (click)="deleteCourse(course)" class="w-14 h-14 rounded-3xl bg-slate-50 text-slate-400 hover:bg-rose-500 hover:text-white transition-all duration-500 flex-center hover:scale-110 shadow-sm"><mat-icon class="scale-75">delete</mat-icon></button>
+                       </div>
+                    </div>
+                  }
+                  <button (click)="createNewCourse()" class="p-12 rounded-[64px] border-4 border-dashed border-slate-100 text-slate-300 hover:border-primary-500/50 hover:text-primary-500 hover:bg-primary-50/20 transition-all duration-700 flex flex-col items-center justify-center gap-6 group">
+                     <div class="w-20 h-20 bg-slate-50 rounded-[32px] flex-center group-hover:bg-primary-500 group-hover:text-white group-hover:rotate-90 transition-all duration-700 shadow-sm group-hover:shadow-xl group-hover:shadow-primary-500/30">
+                        <mat-icon class="scale-[1.8]">add</mat-icon>
+                     </div>
+                     <span class="text-xs font-black uppercase tracking-[0.4em]">Inyectar Nuevo Activo Educativo</span>
+                  </button>
+               </div>
+             }
+          </div>
+
         </div>
-      </div>
+      </main>
+
     </div>
-  `
+  `,
 })
 export class AdminPanel {
-  private auth = inject(AuthService);
+  public auth = inject(AuthService);
   private courseService = inject(CourseService);
+  private router = inject(Router);
+
+  activeView = signal('Dashboard');
+  menuItems = [
+    { label: 'Dashboard', icon: 'dashboard', view: 'Dashboard' },
+    { label: 'Cursos', icon: 'school', view: 'Cursos' },
+    { label: 'Usuarios', icon: 'people', view: 'Usuarios' }
+  ];
 
   allUsers = signal<User[]>([]);
-  allCourses = signal<Course[]>([]);
+  allCourses = computed(() => this.courseService.getAllCourses()());
 
   constructor() {
-    this.refreshUsers();
-    this.allCourses.set(this.courseService.getAllCourses()());
+    if (this.auth.currentUser()?.role !== 'admin') {
+      this.router.navigate(['/']);
+    }
+    this.refreshData();
   }
 
-  refreshUsers() {
-    const users: User[] = JSON.parse(localStorage.getItem('nitex_users_db') || '[]');
-    // Add logged in users if any from session? 
-    // Usually DB is the source. The AuthService register/login syncs to 'nitex_users_db'.
-    // Let's add the default admin if missing
-    if (!users.find((u: User) => u.email === 'admin@nitex.com')) {
-       users.push({
-         id: 'admin_1',
-         email: 'admin@nitex.com',
-         name: 'Administrador Nitex',
-         role: 'admin',
-         enrolledCourses: [],
-         completedLessons: [],
-         examResults: {},
-         certificates: [],
-         createdAt: Date.now()
-       });
-    }
-    this.allUsers.set(users);
+  refreshData() {
+    this.allUsers.set(JSON.parse(localStorage.getItem('nitex_users_db') || '[]'));
   }
 
   editUser(user: User) {
-    const newName = prompt('Nuevo nombre:', user.name);
-    if (newName && newName !== user.name) {
+    const name = prompt('Nuevo nombre del estudiante:', user.name);
+    if (name) {
       const users = [...this.allUsers()];
       const idx = users.findIndex(u => u.id === user.id);
-      if (idx !== -1) {
-        users[idx] = { ...users[idx], name: newName };
-        localStorage.setItem('nitex_users_db', JSON.stringify(users));
-        this.refreshUsers();
-        // If current user is the one edited, update session
-        if (this.auth.currentUser()?.id === user.id) {
-          this.auth.updateUser(users[idx]);
-        }
-      }
+      users[idx] = { ...users[idx], name };
+      localStorage.setItem('nitex_users_db', JSON.stringify(users));
+      this.refreshData();
     }
   }
 
   deleteUser(user: User) {
     if (user.role === 'admin') return;
-    if (confirm(`¿Seguro que quieres eliminar a ${user.name}?`)) {
+    if (confirm(`¿Estás seguro de expulsar a ${user.name} de la comunidad?`)) {
       const users = this.allUsers().filter(u => u.id !== user.id);
       localStorage.setItem('nitex_users_db', JSON.stringify(users));
-      this.refreshUsers();
+      this.refreshData();
+    }
+  }
+
+  createNewCourse() {
+    const title = prompt('Título del nuevo curso:');
+    if (title) {
+       const newCourse: Course = {
+          id: 'new-' + Date.now(),
+          title,
+          category: 'Tecnología',
+          shortDescription: 'Nuevo curso inyectado desde el panel admin.',
+          fullDescription: 'Descripción extendida del curso.',
+          image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800',
+          level: 'Básico',
+          duration: '20h',
+          lessonsCount: 5,
+          rating: 5.0,
+          instructor: 'Admin Instructor',
+          video: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+       };
+       this.courseService.addCourse(newCourse);
+    }
+  }
+
+  editCourse(course: Course) {
+    const newTitle = prompt('Nuevo título para el curso:', course.title);
+    if (newTitle) {
+       this.courseService.updateCourse({ ...course, title: newTitle });
+    }
+  }
+
+  deleteCourse(course: Course) {
+    if (confirm(`¿Eliminar ${course.title} permanentemente del catálogo de élite?`)) {
+      this.courseService.deleteCourse(course.id);
     }
   }
 }

@@ -1,4 +1,4 @@
-export type CourseLevel = 'Básico' | 'Intermedio' | 'Avanzado' | 'Experto';
+export type CourseLevel = 'Básico' | 'Intermedio' | 'Avanzado' | 'Experto' | string;
 
 export interface Course {
   id: string;
@@ -12,6 +12,7 @@ export interface Course {
   lessonsCount: number;
   rating: number;
   instructor: string;
+  video: string;
   featured?: boolean;
 }
 
@@ -21,10 +22,10 @@ export interface CoursePath {
 }
 
 export interface LevelStructure {
-  id: number; // 0, 1, 2, 3
-  name: CourseLevel;
+  id: number;
+  name: string;
   lessons: Lesson[];
-  exam: Exam;
+  exam?: Exam;
 }
 
 export interface Lesson {
@@ -32,7 +33,7 @@ export interface Lesson {
   title: string;
   description: string;
   content: string;
-  videoUrl: string;
+  videoUrl?: string;
   duration: string;
 }
 

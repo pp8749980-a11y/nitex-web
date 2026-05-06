@@ -10,16 +10,21 @@ import { ProfileDashboard } from './features/profile/profile-dashboard';
 import { AdminPanel } from './features/admin/admin-panel';
 import { About } from './features/about/about';
 
+import { FinalExam } from './features/courses/final-exam';
+import { CertificateViewer } from './features/profile/certificate-viewer';
+
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'courses', component: CourseList },
   { path: 'courses/:id', component: CourseDetail },
   { path: 'learning/:id', component: LearningClassroom },
+  { path: 'exam/:id', component: FinalExam },
   { path: 'about', component: About },
   { path: 'auth/login', component: Login },
   { path: 'auth/register', component: Register },
   { path: 'auth/forgot-password', component: ForgotPassword },
   { path: 'profile', component: ProfileDashboard },
+  { path: 'certificates/:id', component: CertificateViewer },
   { path: 'admin', component: AdminPanel },
   { path: '**', redirectTo: '' }
 ];

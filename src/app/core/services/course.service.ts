@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
-import { Course, LevelStructure } from '../models/course.model';
+import { Injectable, signal, inject } from '@angular/core';
+import { Course } from '../models/course.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -7,190 +8,177 @@ import { Course, LevelStructure } from '../models/course.model';
 export class CourseService {
   private courses = signal<Course[]>([
     {
-      id: 'src',
-      title: 'Secretaría Recepcionista y Servicio al Cliente',
-      shortDescription: 'Domina la gestión administrativa y la excelencia en atención.',
-      fullDescription: 'Formación integral para profesionales de oficina, cubriendo desde protocolo y etiqueta hasta herramientas digitales modernas y resolución de conflictos.',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1000',
-      category: 'Administración',
-      level: 'Básico',
-      duration: '40h',
-      lessonsCount: 40,
-      rating: 4.9,
-      instructor: 'Dra. Elena Ramos',
-      featured: true
-    },
-    {
-      id: 'eb',
-      title: 'Estilista en Belleza',
-      shortDescription: 'Conviértete en un experto de la imagen y el cuidado personal.',
-      fullDescription: 'Un recorrido completo por técnicas de corte, colorimetría avanzada y tratamientos capilares de tendencia profesional.',
-      image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000',
-      category: 'Belleza',
-      level: 'Intermedio',
-      duration: '60h',
-      lessonsCount: 40,
+      id: '1',
+      title: "Secretaría Recepcionista y Servicio al Cliente",
+      category: "Administración",
+      shortDescription: "Domina las habilidades de atención y gestión de oficina.",
+      fullDescription: "Formación integral para profesionales de recepción y servicio al cliente.",
+      image: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=800",
+      video: "https://www.youtube.com/embed/jfKfPfyJRdk",
+      level: "Básico",
+      duration: "40h",
+      lessonsCount: 3,
       rating: 4.8,
-      instructor: 'Marco Polo',
+      instructor: "Claudia Mendez",
       featured: true
     },
     {
-      id: 'cbc',
-      title: 'Cajero Bancario Computarizado',
-      shortDescription: 'Operaciones financieras de alta precisión y seguridad.',
-      fullDescription: 'Capacitación técnica en manejo de efectivo, detección de moneda, software bancario y normativas financieras internacionales.',
-      image: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1000',
-      category: 'Finanzas',
-      level: 'Avanzado',
-      duration: '50h',
-      lessonsCount: 40,
+      id: '2',
+      title: "Estilista en Belleza",
+      category: "Belleza",
+      shortDescription: "Aprende las técnicas más avanzadas de estilismo.",
+      fullDescription: "Curso completo de peluquería, colorimetría y tendencias.",
+      image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=800",
+      video: "https://www.youtube.com/embed/QzZk1YwF0xA",
+      level: "Intermedio",
+      duration: "60h",
+      lessonsCount: 3,
+      rating: 4.9,
+      instructor: "Marco Antonio",
+      featured: true
+    },
+    {
+      id: '3',
+      title: "Cajero Bancario Computarizado",
+      category: "Finanzas",
+      shortDescription: "Capacitación técnica para el sector bancario.",
+      fullDescription: "Manejo de sistemas bancarios, conteo de dinero y atención al público.",
+      image: "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=800",
+      video: "https://www.youtube.com/embed/3xVQx0W9z5Q",
+      level: "Básico",
+      duration: "30h",
+      lessonsCount: 3,
       rating: 4.7,
-      instructor: 'Lic. Ricardo Mendoza',
+      instructor: "Roberto Silva",
       featured: true
     },
     {
-      id: 'ua',
-      title: 'Uñas Acrílicas',
-      shortDescription: 'Arte y técnica profesional en diseño de uñas.',
-      fullDescription: 'Desde la anatomía de la uña hasta diseños en 3D, encapsulado y tendencias vanguardistas del Nail Art.',
-      image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=1000',
-      category: 'Belleza',
-      level: 'Básico',
-      duration: '35h',
-      lessonsCount: 40,
+      id: '4',
+      title: "Uñas Acrílicas",
+      category: "Estética",
+      shortDescription: "Diseño y aplicación profesional de uñas.",
+      fullDescription: "Técnicas de esculpido, mantenimiento y arte en uñas.",
+      image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=800",
+      video: "https://www.youtube.com/embed/Y8v7k5kzF0g",
+      level: "Básico",
+      duration: "25h",
+      lessonsCount: 3,
       rating: 4.9,
-      instructor: 'Samy Nails',
-      featured: false
+      instructor: "Laura Nails"
     },
     {
-      id: 'af',
-      title: 'Auxiliar en Farmacia',
-      shortDescription: 'Gestión farmacéutica y dispensación especializada.',
-      fullDescription: 'Conocimientos sólidos en farmacología, control de inventarios, recetas médicas y atención farmacéutica de primer nivel.',
-      image: 'https://images.unsplash.com/photo-1587854685352-25d82032960f?q=80&w=1000',
-      category: 'Salud',
-      level: 'Intermedio',
-      duration: '55h',
-      lessonsCount: 40,
+      id: '5',
+      title: "Auxiliar en Farmacia",
+      category: "Salud",
+      shortDescription: "Gestión y dispensación de medicamentos.",
+      fullDescription: "Conocimientos farmacéuticos, recetas y atención en farmacia.",
+      image: "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=800",
+      video: "https://www.youtube.com/embed/Z6Kk7d2mP0A",
+      level: "Intermedio",
+      duration: "45h",
+      lessonsCount: 3,
       rating: 4.8,
-      instructor: 'Dr. Luis Castillos',
-      featured: true
+      instructor: "Dr. Sergio Peña"
     },
     {
-      id: 'bp',
-      title: 'Barbería Profesional',
-      shortDescription: 'Cortes clásicos y modernos con acabado de autor.',
-      fullDescription: 'Domina el manejo de navaja, degrade (fades), arreglo de barba y rituales de spa para caballeros.',
-      image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000',
-      category: 'Belleza',
-      level: 'Básico',
-      duration: '45h',
-      lessonsCount: 40,
+      id: '6',
+      title: "Barbería Profesional",
+      category: "Belleza",
+      shortDescription: "Cortes clásicos y modernos para caballeros.",
+      fullDescription: "Técnicas de afeitado, diseño de barba y desvanecidos.",
+      image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800",
+      video: "https://www.youtube.com/embed/9xWl3lFz3x8",
+      level: "Básico",
+      duration: "35h",
+      lessonsCount: 3,
       rating: 5.0,
-      instructor: 'Tony Barber',
-      featured: false
+      instructor: "Victor Barber"
     },
     {
-      id: 'ae',
-      title: 'Auxiliar de Enfermería',
-      shortDescription: 'Cuidado humano y asistencia técnica en salud.',
-      fullDescription: 'Primeros auxilios, enfermería básica, signos vitales y cuidados paliativos bajo estándares hospitalarios.',
-      image: 'https://images.unsplash.com/photo-1576091160550-217359f4ecf8?q=80&w=1000',
-      category: 'Salud',
-      level: 'Avanzado',
-      duration: '80h',
-      lessonsCount: 40,
+      id: '7',
+      title: "Auxiliar de Enfermería",
+      category: "Salud",
+      shortDescription: "Cuidado básico y apoyo al paciente.",
+      fullDescription: "Primeros auxilios, signos vitales y cuidados generales.",
+      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=800",
+      video: "https://www.youtube.com/embed/O5nskjZ_GoI",
+      level: "Intermedio",
+      duration: "80h",
+      lessonsCount: 3,
       rating: 4.9,
-      instructor: 'Lic. Maria Lopez',
-      featured: true
+      instructor: "Lic. Marta Lopez"
     },
     {
-      id: 'ib',
-      title: 'Informática Básica',
-      shortDescription: 'Herramientas esenciales para la era digital.',
-      fullDescription: 'Dominio de Office (Word, Excel, PowerPoint), navegación segura y gestión de archivos en la nube.',
-      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1000',
-      category: 'Tecnología',
-      level: 'Básico',
-      duration: '30h',
-      lessonsCount: 40,
+      id: '8',
+      title: "Informática Básica",
+      category: "Tecnología",
+      shortDescription: "Domina Windows, Office e Internet.",
+      fullDescription: "Uso eficiente de herramientas digitales para el día a día.",
+      image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800",
+      video: "https://www.youtube.com/embed/Y2fXvQ0kq5A",
+      level: "Básico",
+      duration: "20h",
+      lessonsCount: 3,
       rating: 4.6,
-      instructor: 'Ing. Carlos Soto',
-      featured: false
+      instructor: "Ing. Luis Castro"
     },
     {
-      id: 'ecp',
-      title: 'Estilismo en Cejas y Pestañas',
-      shortDescription: 'Lifting, diseño y extensiones de impacto.',
-      fullDescription: 'Técnicas de visajismo, microblading, extensiones pelo a pelo y laminado de cejas profesional.',
-      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?q=80&w=1000',
-      category: 'Belleza',
-      level: 'Básico',
-      duration: '25h',
-      lessonsCount: 40,
+      id: '9',
+      title: "Estilismo en Cejas y Pestañas",
+      category: "Belleza",
+      shortDescription: "Perfecciona la mirada con técnicas modernas.",
+      fullDescription: "Lifting, diseño de cejas y extensiones de pestañas.",
+      image: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=800",
+      video: "https://www.youtube.com/embed/J8l9s2FfP0Q",
+      level: "Básico",
+      duration: "15h",
+      lessonsCount: 3,
       rating: 4.8,
-      instructor: 'Bella Brows',
-      featured: false
+      instructor: "Ana Beauty"
     },
     {
-      id: 'fm',
-      title: 'Facial y Maquillaje',
-      shortDescription: 'Skin care y arte cosmético avanzado.',
-      fullDescription: 'Tratamientos faciales profesionales y técnicas de maquillaje para eventos, novias y social media.',
-      image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1000',
-      category: 'Belleza',
-      level: 'Intermedio',
-      duration: '40h',
-      lessonsCount: 40,
-      rating: 4.7,
-      instructor: 'Carla Beauty',
-      featured: false
-    },
-    {
-      id: 'en',
-      title: 'Inglés Básico',
-      shortDescription: 'Comunicación efectiva desde el primer día.',
-      fullDescription: 'Método comunicativo para dominar el inglés necesario en viajes, trabajo y entornos sociales básicos.',
-      image: 'https://images.unsplash.com/photo-1543167601-52193b2a2491?q=80&w=1000',
-      category: 'Idiomas',
-      level: 'Básico',
-      duration: '40h',
-      lessonsCount: 40,
-      rating: 4.8,
-      instructor: 'Teacher John',
-      featured: true
-    },
-    {
-      id: 'rmc',
-      title: 'Reparación y Mantenimiento de Celulares',
-      shortDescription: 'Técnico experto en dispositivos móviles.',
-      fullDescription: 'Hardware y software: micro-soldadura, cambio de pantallas, flasheo de sistemas y diagnóstico electrónico.',
-      image: 'https://images.unsplash.com/photo-1512428559083-a401c33e2b52?q=80&w=1000',
-      category: 'Tecnología',
-      level: 'Intermedio',
-      duration: '50h',
-      lessonsCount: 40,
+      id: '10',
+      title: "Facial y Maquillaje",
+      category: "Belleza",
+      shortDescription: "Cuidado de la piel y arte del maquillaje.",
+      fullDescription: "Tratamientos faciales y maquillaje para toda ocasión.",
+      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800",
+      video: "https://www.youtube.com/embed/1hHMwLxN6EM",
+      level: "Básico",
+      duration: "30h",
+      lessonsCount: 3,
       rating: 4.9,
-      instructor: 'Tech Master Gio',
-      featured: true
+      instructor: "Elena Makeup"
+    },
+    {
+      id: '11',
+      title: "Inglés Básico",
+      category: "Idiomas",
+      shortDescription: "Primeros pasos para hablar inglés.",
+      fullDescription: "Gramática, vocabulario y conversación fundamental.",
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800",
+      video: "https://www.youtube.com/embed/2Xz7m3YpQ0M",
+      level: "Básico",
+      duration: "50h",
+      lessonsCount: 3,
+      rating: 4.7,
+      instructor: "James Wilson"
+    },
+    {
+      id: '12',
+      title: "Reparación y Mantenimiento de Celulares",
+      category: "Tecnología",
+      shortDescription: "Arregla dispositivos móviles profesionalmente.",
+      fullDescription: "Hardware, software y diagnóstico de fallas en celulares.",
+      image: "https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?q=80&w=800",
+      video: "https://www.youtube.com/embed/jfKfPfyJRdk",
+      level: "Intermedio",
+      duration: "40h",
+      lessonsCount: 3,
+      rating: 4.9,
+      instructor: "Kevin Tech"
     }
   ]);
-
-  // Dynamic path generation for all courses
-  private coursePaths: Record<string, LevelStructure[]> = {
-    'src': this.generateLevels('src'),
-    'eb': this.generateLevels('eb'),
-    'cbc': this.generateLevels('cbc'),
-    'ua': this.generateLevels('ua'),
-    'af': this.generateLevels('af'),
-    'bp': this.generateLevels('bp'),
-    'ae': this.generateLevels('ae'),
-    'ib': this.generateLevels('ib'),
-    'ecp': this.generateLevels('ecp'),
-    'fm': this.generateLevels('fm'),
-    'en': this.generateLevels('en'),
-    'rmc': this.generateLevels('rmc')
-  };
 
   getAllCourses() {
     return this.courses;
@@ -200,32 +188,88 @@ export class CourseService {
     return this.courses().find(c => c.id === id);
   }
 
-  getCourseLevels(courseId: string): LevelStructure[] {
-    return this.coursePaths[courseId] || [];
+  addCourse(course: Course) {
+    this.courses.update(prev => [...prev, course]);
   }
 
-  private generateLevels(courseId: string): LevelStructure[] {
-    const levelNames: ('Básico' | 'Intermedio' | 'Avanzado' | 'Experto')[] = ['Básico', 'Intermedio', 'Avanzado', 'Experto'];
-    return levelNames.map((name, i) => ({
-      id: i,
-      name,
-      lessons: Array.from({ length: 10 }, (_, j) => ({
-        id: `${courseId}_l${i}_${j}`,
-        title: `Lección ${j + 1}: ${name} - Conceptos ${j + 1}`,
-        description: `En esta lección aprenderemos los fundamentos de ${name} enfocados en la unidad ${j + 1}.`,
-        content: `Contenido extenso de la lección ${j + 1} del nivel ${name}...`,
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        duration: '10:00'
-      })),
-      exam: {
-        id: `${courseId}_exam_${i}`,
-        questions: Array.from({ length: 10 }, (_, q) => ({
-          id: `${courseId}_q_${i}_${q}`,
-          text: `Pregunta de examen ${q + 1} para el nivel ${name}?`,
-          options: ['Opción A relevante', 'Opción B correcta', 'Opción C distractora', 'Opción D técnica'],
-          correctIndex: 1
-        }))
+  updateCourse(updated: Course) {
+    this.courses.update(prev => prev.map(c => c.id === updated.id ? updated : c));
+  }
+
+  deleteCourse(id: string) {
+    this.courses.update(prev => prev.filter(c => c.id !== id));
+  }
+
+  getCourseProgress(courseId: string): number {
+    const auth = inject(AuthService);
+    const user = auth.currentUser();
+    if (!user) return 0;
+    
+    const levels = this.getCourseLevels(courseId);
+    const totalLessons = levels.reduce((acc, lvl) => acc + lvl.lessons.length, 0);
+    if (totalLessons === 0) return 0;
+    
+    const completedCount = levels.reduce((acc, lvl) => {
+      return acc + lvl.lessons.filter((l: any) => user.completedLessons.includes(l.id)).length;
+    }, 0);
+    
+    return Math.round((completedCount / totalLessons) * 100);
+  }
+
+  getCourseLevels(courseId: string): any[] {
+    return [
+      {
+        id: 0,
+        name: 'Introducción',
+        lessons: [
+          { id: courseId + '-intro', title: 'Bienvenida al curso', videoUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk', description: 'Conoce los objetivos y metodología del programa.', content: 'En este curso aprenderás las bases fundamentales...' }
+        ]
+      },
+      {
+        id: 1,
+        name: 'Nivel 1: Fundamentos Técnicos',
+        lessons: [
+          { id: courseId + '-n1-l1', title: 'Conceptos clave de la industria', videoUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk', description: 'Primeros pasos en la especialidad.', content: 'Los fundamentos son la base de todo profesional...' }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Nivel 2: Aplicación Práctica',
+        lessons: [
+          { id: courseId + '-n2-l1', title: 'Técnicas avanzadas', videoUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk', description: 'Profundizando en el conocimiento.', content: 'La práctica constante es lo que define al experto...' }
+        ]
+      },
+      {
+        id: 3,
+        name: 'Nivel 3: Perfeccionamiento',
+        lessons: [
+          { id: courseId + '-n3-l1', title: 'Casos de éxito y resolución', videoUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk', description: 'Preparación para el mundo real.', content: 'Dominar la resolución de problemas es clave...' }
+        ]
       }
-    }));
+    ];
+  }
+
+  getFinalExam(courseId: string): any {
+    return {
+      id: 'exam-' + courseId,
+      questions: [
+        { id: 'q1', text: '¿Cuál es el objetivo principal de este curso?', options: ['Aprender técnicas nuevas', 'Ganar dinero', 'Dormir', 'Ninguna'], correctIndex: 0 },
+        { id: 'q2', text: '¿Qué herramienta es fundamental?', options: ['Computadora', 'Pincel', 'Teléfono', 'Todas'], correctIndex: 3 }
+      ]
+    };
+  }
+
+  enrollInCourse(courseId: string) {
+    const auth = inject(AuthService);
+    const user = auth.currentUser();
+    if (user && !user.enrolledCourses.includes(courseId)) {
+      const updatedUser = {
+        ...user,
+        enrolledCourses: [...user.enrolledCourses, courseId]
+      };
+      auth.updateUser(updatedUser);
+      return true;
+    }
+    return false;
   }
 }

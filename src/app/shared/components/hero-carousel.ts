@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { CourseService } from '../../core/services/course.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-hero-carousel',
@@ -28,11 +29,7 @@ import { CourseService } from '../../core/services/course.service';
             
             <!-- Left Side Content -->
             <div class="space-y-10 animate-slide-up relative z-20 pt-20 lg:pt-0">
-               <div class="inline-flex items-center gap-4 px-5 py-2 bg-primary-50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-primary-500 animate-pulse">
-                  <mat-icon class="scale-75">bolt</mat-icon>
-                  Aprende sin límites
-               </div>
-
+               
                <h1 class="text-6xl lg:text-[100px] font-black text-text-title tracking-tighter leading-[0.9]">
                   Capacítate hoy, <br> transforma <span class="text-primary-500">tu futuro</span>
                </h1>
@@ -42,12 +39,27 @@ import { CourseService } from '../../core/services/course.service';
                </p>
 
                <div class="flex flex-col sm:flex-row items-center gap-6 pt-6">
-                  <a [routerLink]="['/courses', course.id]" class="btn-primary flex items-center justify-center gap-4 group w-full sm:w-auto">
-                    Explorar cursos <mat-icon class="scale-90 group-hover:translate-x-2 transition-transform">arrow_forward</mat-icon>
+                  <a routerLink="/courses" class="btn-primary group w-full sm:w-auto">
+                    <div class="icon-text">
+                       <span>Explorar Catálogo</span>
+                       <mat-icon class="scale-90 group-hover:translate-x-2 transition-transform">school</mat-icon>
+                    </div>
                   </a>
-                  <a routerLink="/about" class="btn-secondary flex items-center justify-center gap-4 group w-full sm:w-auto">
-                    <mat-icon class="text-primary-500 scale-90 group-hover:rotate-12 transition-transform">play_circle</mat-icon> Ver cómo funciona
-                  </a>
+                  @if (!user()) {
+                    <a routerLink="/auth/register" class="btn-secondary group w-full sm:w-auto">
+                      <div class="icon-text">
+                         <mat-icon class="text-primary-500 scale-90 group-hover:rotate-12 transition-transform">person_add</mat-icon>
+                         <span>Crear cuenta</span>
+                      </div>
+                    </a>
+                  } @else {
+                    <a routerLink="/profile" class="btn-secondary group w-full sm:w-auto">
+                      <div class="icon-text">
+                         <mat-icon class="text-primary-500 scale-90 group-hover:rotate-12 transition-transform">dashboard</mat-icon>
+                         <span>Mi Dashboard</span>
+                      </div>
+                    </a>
+                  }
                </div>
             </div>
 
@@ -146,6 +158,9 @@ import { CourseService } from '../../core/services/course.service';
 })
 export class HeroCarousel {
   private courseService = inject(CourseService);
+  private auth = inject(AuthService);
+  
+  user = computed(() => this.auth.currentUser());
   featuredCourses = computed(() => this.courseService.getAllCourses()().filter(c => c.featured));
   currentSlide = signal(0);
   private interval: ReturnType<typeof setInterval> | undefined;
